@@ -1,0 +1,123 @@
+version: '3.9'
+
+x-spark-image: &spark-base
+    image: custom-spark:3.4.4
+    build:
+        context: .
+        dockerfile: build/Dockerfile
+    network_mode: host
+
+services:
+
+    spark-master:
+        <<: *spark-base
+        container_name: spark-master
+        restart: always
+        cpus: 0.8
+        mem_limit: 1.5g
+        env_file:
+            - ./master/.env
+        command: >
+            /opt/spark/bin/spark-class
+            org.apache.spark.deploy.master.Master
+            --host ${HOST_IP}
+            --port ${MASTER_PORT}
+            --webui-port ${WEB_UI_PORT}
+        volumes:
+            - spark_events:/var/spark-events
+            - ./master/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
+            - ./spark-env.sh:/opt/spark/conf/spark-env.sh
+        healthcheck:
+            test: ["CMD", "bash", "-c", "pgrep -f org.apache.spark.deploy.master.Master"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+
+
+    spark-worker-1:
+        <<: *spark-base
+        container_name: spark-worker-1
+        restart: always
+        cpus: 1.5
+        mem_limit: 3g
+        env_file:
+            - ./workers/.env
+        command: >
+            /opt/spark/bin/spark-class
+            org.apache.spark.deploy.worker.Worker
+            --host ${HOST_IP}
+            --webui-port ${WORKER_1_PORT}
+            spark://${HOST_IP}:${MASTER_PORT}
+        volumes:
+            - spark_events:/var/spark-events
+            - ./workers/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
+            - ./spark-env.sh:/opt/spark/conf/spark-env.sh
+        depends_on:
+            spark-master:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "bash", "-c", "pgrep -f 'org.apache.spark.deploy.worker.Worker'"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+
+
+    spark-worker-2:
+        <<: *spark-base
+        container_name: spark-worker-2
+        restart: always
+        cpus: 1.5
+        mem_limit: 3g
+        env_file:
+            - ./workers/.env
+        command: >
+            /opt/spark/bin/spark-class
+            org.apache.spark.deploy.worker.Worker
+            --host ${HOST_IP}
+            --webui-port ${WORKER_2_PORT}
+            spark://${HOST_IP}:${MASTER_PORT}
+        volumes:
+            - spark_events:/var/spark-events
+            - ./workers/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
+            - ./spark-env.sh:/opt/spark/conf/spark-env.sh
+        depends_on:
+            spark-master:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "bash", "-c", "pgrep -f 'org.apache.spark.deploy.worker.Worker'"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+
+
+    spark-history:
+        <<: *spark-base
+        container_name: spark-history
+        restart: always
+        cpus: 0.2
+        mem_limit: 0.5g
+        env_file:
+            - ./hist-server/.env
+        command: >
+            /opt/spark/bin/spark-class
+            org.apache.spark.deploy.history.HistoryServer
+        volumes:
+            - spark_events:/var/spark-events
+            - ./hist-server/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
+            - ./spark-env.sh:/opt/spark/conf/spark-env.sh
+        depends_on:
+            spark-master:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "bash", "-c", "pgrep -f 'org.apache.spark.deploy.history.HistoryServer'"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+
+volumes:
+    spark_events:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: /spark_events

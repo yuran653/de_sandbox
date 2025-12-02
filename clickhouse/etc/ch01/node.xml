@@ -1,0 +1,18 @@
+<clickhouse>
+    <listen_host>::</listen_host>
+
+    <!-- Native protocol -->
+    <tcp_port>9000</tcp_port>
+
+    <!-- HTTP interface -->
+    <http_port>8123</http_port>
+
+    <!-- Interserver communication -->
+    <interserver_http_port>9009</interserver_http_port>
+
+    <!-- MySQL compatibility -->
+    <mysql_port>9004</mysql_port>
+
+    <!-- PostgreSQL compatibility -->
+    <postgresql_port>9005</postgresql_port>
+</clickhouse>

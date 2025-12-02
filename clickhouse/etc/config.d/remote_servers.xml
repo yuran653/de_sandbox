@@ -1,0 +1,23 @@
+<!-- Remote servers configuration -->
+<clickhouse>
+    <!-- Cluster definitions -->
+    <remote_servers>
+        <!-- ch_cluster with shards -->
+        <ch_cluster>
+            <!-- Shard 1 -->
+            <shard>
+                <replica>
+                    <host>localhost</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <!-- Shard 2 -->
+            <shard>
+                <replica>
+                    <host>localhost</host>
+                    <port>19000</port>
+                </replica>
+            </shard>
+        </ch_cluster>
+    </remote_servers>
+</clickhouse>

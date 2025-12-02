@@ -1,0 +1,21 @@
+<!-- User configuration -->
+<clickhouse>
+    <!-- User accounts -->
+    <users>
+        <!-- datalake user -->
+        <datalake>
+            <!-- Password -->
+            <password>datalake</password>
+            <!-- Profile -->
+            <profile>default</profile>
+            <!-- Quota -->
+            <quota>default</quota>
+
+            <!-- Networks -->
+            <networks>
+                <ip>10.10.0.0/20</ip>
+                <ip>10.104.0.0/20</ip>
+            </networks>
+        </datalake>
+    </users>
+</clickhouse>

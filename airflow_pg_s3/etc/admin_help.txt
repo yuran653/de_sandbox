@@ -1,0 +1,45 @@
+de_sandbox WireGuard Server Admin Steps
+=====================================
+
+Use these steps when you add a new VPN client.
+
+Step 1. Get the valid IP for a new VPN client
+- Run this command to print the first unused address:
+  for host in $(seq 2 254); do
+    if ! grep -q "10.10.0.${host}/32" /etc/wireguard/de_sandbox.conf; then
+      echo "Next free IP: 10.10.0.${host}"
+      break
+    fi
+  done
+- If that IP is taken, choose another unused address in 10.10.0.2-10.10.0.254
+- Record the chosen IP in your address list so it stays reserved for this client
+
+Step 2. Collect the client public key
+- Ask the client to run this command on their laptop:
+  `wg genkey | tee de_sandbox_private.key | wg pubkey > de_sandbox_public.key`
+- They must send you the single line output after execution
+  `cat de_sandbox_public.key`
+- Remind them to keep `de_sandbox_private.key` on their own machine
+
+Step 3. Share the server public key
+- On the server, run `cat /etc/wireguard/publickey`
+- Send that one-line output to the client so they can finish their config
+
+Step 4. Add the peer entry to /etc/wireguard/de_sandbox.conf
+- Run `nano /etc/wireguard/de_sandbox.conf` (or another editor you like)
+- Go to the end of the file and append this block:
+  [Peer]
+  PublicKey = <CLIENT_PUBLIC_KEY>
+  AllowedIPs = 10.10.0.XX/32
+- Replace `<CLIENT_PUBLIC_KEY>` with the string from the client
+- Replace `10.10.0.XX` with the address reserved in Step 1 and keep `/32`
+- Save the file and exit the editor
+
+Step 5. Reload WireGuard
+- Run `systemctl restart wg-quick@de_sandbox` to apply the changes
+
+Step 6. Verify the peer is listed
+- Run `wg show de_sandbox`
+- You will see the new peer immediately. A handshake appears after the client connects
+
+Keep your address list next to this guide so you never reuse a /32 assignment
