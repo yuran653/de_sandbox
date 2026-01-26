@@ -44,5 +44,14 @@ RUN /usr/local/bin/python3.11 -m pip install --upgrade pip
 COPY build/requirements.txt /opt/spark/requirements.txt
 RUN /usr/local/bin/python3.11 -m pip install --no-cache-dir -r /opt/spark/requirements.txt
 
+# Install Jupyter
+RUN /usr/local/bin/python3.11 -m pip install --no-cache-dir \
+    jupyter==1.0.0 \
+    jupyterlab==4.0.9 \
+    notebook==7.0.6
+
+# Create notebooks directory
+RUN mkdir -p /opt/spark/notebooks && chown -R 185:185 /opt/spark/notebooks
+
 # Return Spark image non-root user
 USER 185

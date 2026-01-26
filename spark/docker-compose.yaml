@@ -18,36 +18,27 @@ services:
         env_file:
             - ./master/.env
         command: >
-            /opt/spark/bin/spark-class
-            org.apache.spark.deploy.master.Master
-            --host ${HOST_IP}
-            --port ${MASTER_PORT}
-            --webui-port ${WEB_UI_PORT}
+            /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host ${HOST_IP} --port ${MASTER_PORT} --webui-port ${WEB_UI_PORT}
         volumes:
             - spark_events:/var/spark-events
             - ./master/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
             - ./spark-env.sh:/opt/spark/conf/spark-env.sh
         healthcheck:
-            test: ["CMD", "bash", "-c", "pgrep -f org.apache.spark.deploy.master.Master"]
+            test: [ "CMD", "bash", "-c", "pgrep -f org.apache.spark.deploy.master.Master" ]
             interval: 30s
             timeout: 10s
             retries: 5
-
 
     spark-worker-1:
         <<: *spark-base
         container_name: spark-worker-1
         restart: always
-        cpus: 1.5
-        mem_limit: 3g
+        cpus: 1.2
+        mem_limit: 2.5g
         env_file:
             - ./workers/.env
         command: >
-            /opt/spark/bin/spark-class
-            org.apache.spark.deploy.worker.Worker
-            --host ${HOST_IP}
-            --webui-port ${WORKER_1_PORT}
-            spark://${HOST_IP}:${MASTER_PORT}
+            /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --host ${HOST_IP} --webui-port ${WORKER_1_PORT} spark://${HOST_IP}:${MASTER_PORT}
         volumes:
             - spark_events:/var/spark-events
             - ./workers/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
@@ -56,26 +47,21 @@ services:
             spark-master:
                 condition: service_healthy
         healthcheck:
-            test: ["CMD", "bash", "-c", "pgrep -f 'org.apache.spark.deploy.worker.Worker'"]
+            test: [ "CMD", "bash", "-c", "pgrep -f 'org.apache.spark.deploy.worker.Worker'" ]
             interval: 30s
             timeout: 10s
             retries: 5
-
 
     spark-worker-2:
         <<: *spark-base
         container_name: spark-worker-2
         restart: always
-        cpus: 1.5
-        mem_limit: 3g
+        cpus: 1.2
+        mem_limit: 2.5g
         env_file:
             - ./workers/.env
         command: >
-            /opt/spark/bin/spark-class
-            org.apache.spark.deploy.worker.Worker
-            --host ${HOST_IP}
-            --webui-port ${WORKER_2_PORT}
-            spark://${HOST_IP}:${MASTER_PORT}
+            /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --host ${HOST_IP} --webui-port ${WORKER_2_PORT} spark://${HOST_IP}:${MASTER_PORT}
         volumes:
             - spark_events:/var/spark-events
             - ./workers/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
@@ -84,32 +70,35 @@ services:
             spark-master:
                 condition: service_healthy
         healthcheck:
-            test: ["CMD", "bash", "-c", "pgrep -f 'org.apache.spark.deploy.worker.Worker'"]
+            test: [ "CMD", "bash", "-c", "pgrep -f 'org.apache.spark.deploy.worker.Worker'" ]
             interval: 30s
             timeout: 10s
             retries: 5
 
-
-    spark-history:
+    spark-jupyter:
         <<: *spark-base
-        container_name: spark-history
+        container_name: spark-jupyter
         restart: always
-        cpus: 0.2
-        mem_limit: 0.5g
+        cpus: 0.5
+        mem_limit: 1g
         env_file:
-            - ./hist-server/.env
+            - ./jupyter/.env
+        environment:
+            - PYSPARK_PYTHON=/usr/local/bin/python3.11
+            - PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.11
+            - SPARK_MASTER=spark://${HOST_IP}:${MASTER_PORT}
         command: >
-            /opt/spark/bin/spark-class
-            org.apache.spark.deploy.history.HistoryServer
+            /usr/local/bin/python3.11 -m jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' --notebook-dir=/opt/spark/notebooks
         volumes:
             - spark_events:/var/spark-events
-            - ./hist-server/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
+            - ./jupyter/notebooks:/opt/spark/notebooks
+            - ./master/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
             - ./spark-env.sh:/opt/spark/conf/spark-env.sh
         depends_on:
             spark-master:
                 condition: service_healthy
         healthcheck:
-            test: ["CMD", "bash", "-c", "pgrep -f 'org.apache.spark.deploy.history.HistoryServer'"]
+            test: [ "CMD", "bash", "-c", "curl -s http://localhost:8888 || exit 1" ]
             interval: 30s
             timeout: 10s
             retries: 5
