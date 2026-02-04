@@ -81,7 +81,7 @@ read_client_public_key() {
 }
 
 find_next_host() {
-  for host in $(seq 2 254); do
+  for host in $(seq 10 254); do
     if ! grep -q "10\.10\.0\.${host}/32" "$WG_CONF_PATH"; then
       echo -e "${GREEN}Next host found: 10.10.0.${host}${NC}" >&2
       echo "$host"
