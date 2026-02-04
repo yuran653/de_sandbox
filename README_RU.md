@@ -9,10 +9,10 @@
 * **Windows / macOS:** Скачать с [официального сайта WireGuard](https://www.wireguard.com/install/).
 * **Android:** Скачать из [Google Play](https://play.google.com/store/apps/details?id=com.wireguard.android).
 * **iOS:** Скачать из [App Store](https://apps.apple.com/us/app/wireguard/id1441195209).
-* **Linux:** Установите через менеджер пакетов, например,
-```bash
-sudo apt install wireguard
-```
+* **Linux:** Установите через менеджер пакетов, введя команду,
+    ```bash
+    sudo apt install wireguard
+    ```
 
 ---
 
@@ -37,9 +37,13 @@ sudo apt install wireguard
 
 ### Шаг 3. Передача данных администратору
 
-1.  Откройте файл `de_sandbox_public.key` (или скопируйте `PublicKey` из окна Windows-клиента).
-2.  **Отправьте эту строку администратору** (в мессенджере или по почте).
-3.  ⚠️ **Важно:** Никогда не отправляйте никому свой `Private Key` (Приватный ключ).
+1.  Выполните команду
+    ```bash
+    cat de_sandbox_public.key
+    ```
+    (или скопируйте `PublicKey` из окна Windows-клиента).
+3.  **Отправьте эту строку администратору** (в мессенджере или по почте).
+4.  ⚠️ **Важно:** Никогда не отправляйте никому свой `Private Key` (Приватный ключ).
 
 ---
 
