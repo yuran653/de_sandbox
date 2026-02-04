@@ -9,7 +9,11 @@
 * **Windows / macOS:** Скачать с [официального сайта WireGuard](https://www.wireguard.com/install/).
 * **Android:** Скачать из [Google Play](https://play.google.com/store/apps/details?id=com.wireguard.android).
 * **iOS:** Скачать из [App Store](https://apps.apple.com/us/app/wireguard/id1441195209).
-* **Linux:** Установите через менеджер пакетов (например, `sudo apt install wireguard`).
+* **Linux:** Установите через менеджер пакетов (например,
+```bash
+sudo apt install wireguard
+```
+).
 
 ---
 
