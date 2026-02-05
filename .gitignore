@@ -1,0 +1,46 @@
+# Environment files with secrets
+.env
+*.env
+!*.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.venv/
+venv/
+ENV/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docker volumes (if mounted locally for testing)
+pg_data/
+pg_metadata/
+minio_data/
+spark_events/
+clickhouse_data/
+
+# WireGuard configs with secrets
+*.conf
+!nftables.conf
+
+# Temporary files
+*.tmp
+*.bak
