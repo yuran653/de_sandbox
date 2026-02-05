@@ -44,14 +44,16 @@ def generate_test_data():
     """Generate sample CSV data and upload to MinIO (VPS 1)"""
     import io
     import csv
+    import os
     from datetime import datetime
     from minio import Minio
     
     # MinIO connection details (VPS 1)
+    # In production, use Airflow connections or environment variables
     minio_client = Minio(
         "10.104.0.2:9000",
-        access_key="42Bangkok",  # Use your actual credentials
-        secret_key="LadKrabang",
+        access_key=os.getenv("MINIO_ACCESS_KEY", "42Bangkok"),  # Use environment variable
+        secret_key=os.getenv("MINIO_SECRET_KEY", "LadKrabang"),  # Use environment variable
         secure=False
     )
     

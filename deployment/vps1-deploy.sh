@@ -26,7 +26,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Verify we're on the correct IP
-CURRENT_IP=$(hostname -I | awk '{print $2}')
+CURRENT_IP=$(ip -4 addr show | grep 'inet.*10.104.0' | awk '{print $2}' | cut -d'/' -f1 | head -1)
 EXPECTED_IP="10.104.0.2"
 
 echo -e "\n${YELLOW}Verifying network configuration...${NC}"

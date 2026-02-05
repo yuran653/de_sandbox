@@ -85,7 +85,7 @@ fi
 
 # Check 6: Private network configuration
 echo -e "\n${YELLOW}Checking network configuration...${NC}"
-PRIVATE_IP=$(hostname -I | awk '{print $2}')
+PRIVATE_IP=$(ip -4 addr show | grep 'inet.*10.104.0' | awk '{print $2}' | cut -d'/' -f1 | head -1)
 if [[ $PRIVATE_IP =~ ^10\.104\.0\.[2-4]$ ]]; then
     check_pass "Valid private IP detected: $PRIVATE_IP"
     
