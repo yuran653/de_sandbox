@@ -1,152 +1,179 @@
-# System Architecture Description (for Coding AI Agents)
+# Infrastructure Architecture for AI Coding Agents
 
-## 1. Overview
+## Purpose
+This document defines the runtime, data, and network architecture intended to be consumed by **coding AI agents** (code generation, orchestration, data processing, and analytics agents).  
+It is **descriptive, not prescriptive**.
 
-The system consists of three Virtual Private Servers (VPS) deployed in DigitalOcean.  
-The architecture follows a **single-entry-point** model, where all external network access is terminated on `vps_1`. Internal communication between components occurs over private networking.
+---
 
-The platform is designed to support:
+## High-Level Topology
+
+- **Cloud Provider**: DigitalOcean
+- **Network Model**: Private network `10.104.0.0/24`
+- **Public Entry Point**: `vps_1` only
+- **Isolation Strategy**:
+  - Docker for stateful services
+  - Kubernetes for distributed compute
+- **Trust Boundary**: Internet → `vps_1` → internal private network
+
+---
+
+## Nodes Overview
+
+| Node | Private IP | Role |
+|-----|------------|------|
+| vps_1 | 10.104.0.2 | Edge, control plane, orchestration |
+| vps_2 | 10.104.0.3 | Distributed compute (Spark) |
+| vps_3 | 10.104.0.4 | Analytical storage (ClickHouse) |
+
+---
+
+## vps_1 — Edge & Orchestration Node
+
+**OS**: Debian 12  
+**Runtime**: Docker Engine  
+**External Access**: Yes (single ingress point)
+
+### Responsibilities
+- Secure ingress from the public internet
 - Workflow orchestration
-- OLTP storage
-- Analytical processing
-- Distributed computation with Spark
-- Object storage (S3-compatible)
-- Secure remote access
+- Transactional and metadata storage
+- Object storage abstraction
+- VPN gateway for private network access
+
+### Installed Services (Docker Containers)
+
+| Service | Purpose |
+|------|--------|
+| OpenVPN | Secure access to private network |
+| Apache Airflow | Workflow orchestration and scheduling |
+| PostgreSQL (Airflow Meta DB) | Airflow metadata |
+| PostgreSQL (OLTP) | Operational / source-of-truth data |
+| S3-compatible storage | Object storage for datasets, artifacts |
+
+### AI-Agent-Relevant Capabilities
+- DAG-based job control (Airflow)
+- Central coordination point
+- Credentials and secret distribution
+- Dataset staging (S3-compatible)
 
 ---
 
-## 2. Network Topology
-
-- **Public Internet Access**: Only `vps_1` is exposed.
-- **Internal Traffic**: `vps_1`, `vps_2`, and `vps_3` communicate via private IPs.
-- **Security Boundary**:
-  - OpenVPN runs on `vps_1` and provides controlled access to internal services.
-  - No direct inbound access to `vps_2` or `vps_3`.
-
----
-
-## 3. VPS Roles and Responsibilities
-
-### 3.1 vps_1 — Control Plane & Entry Point
+## vps_2 — Distributed Compute Node
 
 **OS**: Debian 12  
-**Runtime**: Docker Engine
+**Runtime**: Kubernetes  
+**External Access**: No (private network only)
 
-**Responsibilities**:
-- Single ingress point from the internet
-- Orchestration and control services
-- Metadata and transactional workloads
-- Object storage
+### Responsibilities
+- Large-scale data processing
+- Interactive analytics and experimentation
+- Parallel computation
 
-**Services (Docker containers)**:
-- **Apache Airflow**
-  - DAG orchestration
-  - Task scheduling
-  - Triggers Spark jobs on `vps_2`
-- **PostgreSQL (Airflow Metadata DB)**
-  - Stores Airflow state, DAG runs, task instances
-- **PostgreSQL (OLTP)**
-  - Application-level transactional data
-- **S3-compatible Object Storage**
-  - Shared storage for:
-    - Spark input/output
-    - Intermediate datasets
-    - Artifacts and logs
-- **OpenVPN**
-  - Secure access to internal services
-  - Acts as a bastion / gateway
+### Deployed Workloads
+
+| Component | Purpose |
+|---------|--------|
+| Apache Spark (Kubernetes) | Batch & distributed processing |
+| Jupyter Notebook | Interactive development and analysis |
+
+### AI-Agent-Relevant Capabilities
+- Programmatic Spark job submission
+- Scalable compute for transformations and ML prep
+- Notebook-driven experimentation
+- Stateless execution model
 
 ---
 
-### 3.2 vps_2 — Distributed Compute
+## vps_3 — Analytical Storage Node
 
 **OS**: Debian 12  
-**Runtime**: Kubernetes
+**Runtime**: Docker Engine  
+**External Access**: No (private network only)
 
-**Responsibilities**:
-- Distributed data processing
-- Scalable batch and analytical computation
+### Responsibilities
+- High-performance analytical queries
+- Columnar storage for large datasets
 
-**Services**:
-- **Apache Spark on Kubernetes**
-  - Spark drivers and executors run as pods
-  - Jobs are submitted remotely (e.g., from Airflow)
-  - Reads from / writes to:
-    - S3-compatible storage on `vps_1`
-    - ClickHouse on `vps_3`
+### Deployed Services
 
-**Key Characteristics**:
-- Stateless compute
-- Horizontally scalable via Kubernetes
-- No direct internet exposure
+| Service | Purpose |
+|-------|--------|
+| ClickHouse (2 shards) | Distributed OLAP storage |
 
----
-
-### 3.3 vps_3 — Analytical Storage
-
-**OS**: Debian 12  
-**Runtime**: Docker Engine
-
-**Responsibilities**:
-- Analytical querying
-- High-performance OLAP workloads
-
-**Services (Docker containers)**:
-- **ClickHouse (2 shards)**
-  - Sharded deployment for horizontal scalability
-  - Used for:
-    - Aggregations
-    - Analytical queries
-    - Reporting workloads
-
-**Access Pattern**:
-- Written to by Spark jobs (`vps_2`)
-- Queried by:
-  - Airflow tasks
-  - Internal consumers via VPN
+### AI-Agent-Relevant Capabilities
+- Fast analytical queries
+- Read-optimized workloads
+- Suitable for feature generation and reporting layers
 
 ---
 
-## 4. Data Flow
+## Network & Security Model
 
-1. **Ingestion**
-   - Data arrives via Airflow-triggered jobs or external sources.
-   - Raw data stored in S3-compatible storage on `vps_1`.
+### Network
+- All nodes connected via **private network**
+- No east–west traffic exposed publicly
+- Single north–south ingress via `vps_1`
 
-2. **Processing**
-   - Airflow schedules Spark jobs.
-   - Spark runs on Kubernetes (`vps_2`).
-   - Spark reads input from S3 and processes data.
-
-3. **Storage**
-   - Processed data is:
-     - Written back to S3 (intermediate / archival)
-     - Loaded into ClickHouse (`vps_3`) for analytics
-     - Optionally written to PostgreSQL OLTP (`vps_1`)
-
-4. **Analytics**
-   - ClickHouse serves low-latency analytical queries.
-   - Results may be consumed by downstream systems or workflows.
+### Security Controls
+- VPN-based administrative access
+- No public exposure of databases or Spark
+- Logical separation by runtime (Docker vs Kubernetes)
 
 ---
 
-## 5. Architectural Constraints (Explicit)
+## Data Flow (Conceptual)
 
-- Single public entry point: `vps_1`
-- No direct internet access to compute (`vps_2`) or analytics (`vps_3`)
-- Stateless compute, stateful storage
-- Clear separation of concerns:
-  - Orchestration → `vps_1`
-  - Compute → `vps_2`
-  - Analytics → `vps_3`
+```
+
+Internet
+|
+v
+[vps_1]
+
+* API / Airflow / S3 / OLTP
+  |
+  | private network
+  v
+  [vps_2] <--> [vps_3]
+  Spark        ClickHouse
+
+```
 
 ---
 
-## 6. Intended Usage by AI Agents
+## AI Agent Interaction Model
 
-AI agents interacting with this system should assume:
-- All external API calls and job submissions are routed via `vps_1`
-- Long-running or heavy computation is delegated to Spark on `vps_2`
-- Analytical queries target ClickHouse on `vps_3`
-- Shared datasets are exchanged through S3-compatible storage
-- No agent should assume direct access to internal nodes without VPN context
+### Control Plane
+- AI agents interact **only with vps_1** directly
+- All orchestration and scheduling routed via Airflow
+
+### Data Plane
+- Raw and intermediate data: S3-compatible storage
+- Analytical queries: ClickHouse
+- Heavy computation: Spark on Kubernetes
+
+### Execution Constraints
+- No direct public access to compute or analytics nodes
+- Deterministic, reproducible execution via orchestration
+
+---
+
+## Non-Goals / Explicit Exclusions
+
+- No multi-region deployment
+- No auto-scaling beyond Kubernetes defaults
+- No real-time streaming (batch-oriented architecture)
+- No direct agent-to-database public access
+
+---
+
+## Summary
+
+This architecture provides:
+- **Clear trust boundaries**
+- **Single controlled ingress**
+- **Separation of concerns** (orchestration, compute, storage)
+- **Deterministic execution paths** suitable for AI coding agents
+
+It is optimized for **data engineering, analytics, and agent-driven automation**, not for low-latency serving.
