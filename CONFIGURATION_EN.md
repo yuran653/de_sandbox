@@ -69,7 +69,7 @@ All **external ingress traffic** is terminated on **vps_1**, which acts as the *
 
 ## VPS 3 — Analytical Storage Layer
 
-**Hostname / IP:** `vps_3 / 10.104.0.2`  
+**Hostname / IP:** `vps_3 / 10.10.0.2`  
 **OS:** Debian 12  
 **Roles:**  
 - Analytical data storage
