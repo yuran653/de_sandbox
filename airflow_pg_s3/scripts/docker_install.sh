@@ -6,6 +6,11 @@
 
 set -euo pipefail
 
+# Ensure script runs from project root for consistent relative paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="${SCRIPT_DIR}/.."
+cd "${PROJECT_ROOT}"
+
 BLUE='\033[1;34m'
 GREEN='\033[0;32m'
 NC='\033[0m'

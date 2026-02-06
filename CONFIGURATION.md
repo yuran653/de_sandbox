@@ -5,20 +5,6 @@
 The system is deployed on **DigitalOcean** and consists of **three VPS instances** connected via a **private network (10.104.0.0/24)**.  
 All **external ingress traffic** is terminated on **vps_1**, which acts as the **single entry point** to the internal infrastructure.
 
-```
-
-Internet
-|
-v
-[vps_1]  (Ingress / VPN / Control Plane)
-|
-+---------------- Private Network ----------------+
-|                                                 |
-[vps_2]                                         [vps_3]
-(Compute)                                      (Analytics)
-
-```
-
 ---
 
 ## VPS 1 — Ingress, Orchestration, OLTP, Object Storage

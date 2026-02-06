@@ -8,6 +8,10 @@
 
 set -euo pipefail
 
+# Ensure script runs from project root so subscripts' relative paths resolve correctly
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 # Color codes for terminal output
 BLUE='\033[1;34m'
 GREEN='\033[0;32m'
@@ -19,13 +23,13 @@ echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Starting Complete Installation Process${NC}"
 echo -e "${BLUE}========================================${NC}"
 
-# Step 1: Install WireGuard
-echo -e "\n${YELLOW}Step 1/3: Installing and configuring WireGuard VPN${NC}"
-if [ -f "./scripts/wireguard_install.sh" ]; then
-    bash "./scripts/wireguard_install.sh"
-    echo -e "${GREEN}WireGuard installation completed${NC}"
+# Step 1: Install OpenVPN
+echo -e "\n${YELLOW}Step 1/3: Installing and configuring OpenVPN${NC}"
+if [ -f "./scripts/openvpn_install.sh" ]; then
+    bash "./scripts/openvpn_install.sh"
+    echo -e "${GREEN}OpenVPN installation completed${NC}"
 else
-    echo -e "${RED}Error: wireguard_install.sh not found${NC}"
+    echo -e "${RED}Error: openvpn_install.sh not found${NC}"
     exit 1
 fi
 
