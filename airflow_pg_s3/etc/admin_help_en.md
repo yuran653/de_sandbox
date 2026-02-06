@@ -1,0 +1,34 @@
+# OpenVPN Server Administration (de_sandbox)
+
+Use these steps when you add a new VPN client.
+
+---
+
+### Step 1. Generate the client configuration
+
+* Run the generation script with a unique client name:
+`./etc/generate_client_ovpn.sh client_name`
+* Example: `./etc/generate_client_ovpn.sh alice_laptop`
+
+---
+
+### Step 2. Transfer the .ovpn file to the client
+
+* The script will output the path to the generated `.ovpn` file.
+* Securely transfer this file to the client (e.g., via `scp`, `sftp`, or a secure sharing link).
+* WARNING: Do NOT send this file over unencrypted channels (email/slack) as it contains the private key.
+
+---
+
+### Step 3. Client Connection
+
+* The client should import the `.ovpn` file into their OpenVPN Connect client (Windows/macOS/Linux/Android/iOS).
+* Once connected, they should be able to reach internal resources (check `nftables` rules for specific access).
+
+---
+
+### Step 4. Revocation (if needed)
+
+* To revoke a user, use the `./easyrsa revoke client_name` command in `/etc/openvpn/easy-rsa/` and then generate a new CRL: `./easyrsa gen-crl`.
+* Copy the `crl.pem` to `/etc/openvpn/` and restart the service.
+* Note: CRL configuration might need to be added to `server.conf` if not already present.
