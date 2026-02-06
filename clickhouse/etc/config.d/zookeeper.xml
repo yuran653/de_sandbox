@@ -1,7 +1,7 @@
 <clickhouse>
     <zookeeper>
         <node index="1">
-            <host>10.104.0.2</host>
+            <host>10.10.0.5</host>
             <port>2181</port>
         </node>
     </zookeeper>

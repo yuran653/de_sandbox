@@ -9,7 +9,7 @@ All **external ingress traffic** is terminated on **vps_1**, which acts as the *
 
 ## VPS 1 — Ingress, Orchestration, OLTP, Object Storage
 
-**Hostname / IP:** `vps_1 / 10.104.0.2`  
+**Hostname / IP:** `vps_1 / 10.10.0.5`  
 **OS:** Debian 12  
 **Roles:**  
 - Single external entry point  
