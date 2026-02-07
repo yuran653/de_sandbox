@@ -76,6 +76,7 @@ push "route-gateway 10.10.0.5"
 push "topology subnet"
 push "dhcp-option DNS 1.1.1.1"
 push "dhcp-option DNS 1.0.0.1"
+push "route 10.104.0.0 255.255.240.0"
 keepalive 10 120
 cipher AES-256-GCM
 auth SHA256

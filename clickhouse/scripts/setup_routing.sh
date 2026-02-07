@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-WG_HOST='10.104.0.2'
+WG_HOST='10.104.0.5'
 
 BLUE='\033[1;34m'
 GREEN='\033[0;32m'

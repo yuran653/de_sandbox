@@ -7,13 +7,13 @@
 set -euo pipefail
 
 if [ -z "${1:-}" ]; then
-    echo "Usage: $0 <client_name> [service_subnet]"
-    echo "Example: $0 client1 10.8.0.0/24"
+    echo "Usage: $0 <client_name> [service_subnets]"
+    echo "Example: $0 client1 '10.10.0.0/24 10.104.0.0/20'"
     exit 1
 fi
 
 CLIENT_NAME="$1"
-SERVICE_SUBNET="${2:-10.8.0.0/24}"  # Default VPN subnet
+SERVICE_SUBNETS="${2:-10.10.0.0/24 10.104.0.0/20}"  # Default VPN subnets
 VPN_DIR="/etc/openvpn"
 EASY_RSA_DIR="${VPN_DIR}/easy-rsa"
 OUTPUT_DIR="${PWD}"
@@ -55,8 +55,10 @@ auth SHA256
 verb 3
 key-direction 1
 
-# Route only service subnet through VPN tunnel
-route ${SERVICE_SUBNET}
+# Route service subnets through VPN tunnel
+for subnet in ${SERVICE_SUBNETS}; do
+    echo "route ${subnet}" >> "${OUTPUT_FILE}"
+done
 EOF
 
 # Append CA, Cert, Key, TA Key
@@ -77,5 +79,5 @@ cat "${VPN_DIR}/ta.key" >> "${OUTPUT_FILE}"
 echo "</tls-auth>" >> "${OUTPUT_FILE}"
 
 echo "Done! Client config saved to ${OUTPUT_FILE}"
-echo "Services accessible only via VPN tunnel on subnet: ${SERVICE_SUBNET}"
+echo "Services accessible only via VPN tunnel on subnets: ${SERVICE_SUBNETS}"
 echo "All other traffic routes normally (split tunneling)"
