@@ -11,7 +11,7 @@ DE Sandbox is a Docker-based data engineering environment for Debian 12 hosts, i
 
 ## Key Features
 - **Airflow Platform** (`airflow_pg_s3/`): Custom Airflow 2.8.4 image with essential providers, PostgreSQL metadata store, datalake database, and MinIO object storage for S3-compatible operations.
-- **Spark Cluster** (`spark/`): Standalone Spark 3.4.4 cluster with master, two workers, and history server, sharing event logs for job tracking.
+- **Spark Cluster** (`spark/`): K3s-based Spark 3.4.4 cluster with master, worker, and Jupyter Lab, sharing event logs for job tracking.
 - **ClickHouse Cluster** (`clickhouse/`): Distributed ClickHouse 24.8 setup with two nodes and Zookeeper for coordination, enabling high-performance OLAP queries.
 - **Security & Networking**: WireGuard VPN installer with nftables firewall, exposing only necessary ports and routing Docker traffic securely.
 - **Automation & Stability**: Bootstrap scripts for Docker, Docker Compose, and component deployment, with version locking to prevent unexpected breaks.
@@ -45,9 +45,10 @@ DE Sandbox is a Docker-based data engineering environment for Debian 12 hosts, i
 2. **Deploy Airflow Stack**: Run `airflow_pg_s3/install.sh` to install WireGuard, Docker, and launch Airflow with persistent volumes (`/airflow/*`, `/pg_*`, `/minio_datalake`).
 2. **Launch Spark Cluster**: Execute `spark/install.sh` to install Docker, set up routing, and start Spark services, creating `/spark_events` for logs.
 4. **Set Up ClickHouse**: Use `clickhouse/install.sh` for Docker installation, routing setup, and cluster initialization.
-5. **Access Interfaces**:
-   - Airflow UI: `http://<host>:8080` (credentials in `airflow_pg_s3/airflow/.env`)
-   - Spark Master: `http://<host>:8080`, Workers: 8081/8082, History: `http://<host>:18080`
+5. **Access Interfaces** (via WireGuard VPN):
+   - **VPS_1 (Airflow)**: Airflow UI at `http://10.104.0.5:8080`, MinIO Console at `http://10.104.0.5:9001`
+   - **VPS_2 (ClickHouse)**: ClickHouse HTTP at `http://10.104.0.2:8123`
+   - **VPS_3 (Spark)**: Spark Master UI at `http://10.104.0.3:30080`, Jupyter Lab at `http://10.104.0.3:30888`
    - ClickHouse: TCP 9000 (node1), 19000 (node2); HTTP 8123 (node1), 18123 (node2)
    - MinIO Console: `http://<host>:9001`
 

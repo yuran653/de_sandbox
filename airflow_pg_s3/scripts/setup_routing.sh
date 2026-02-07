@@ -8,7 +8,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${BLUE}Starting Routing Setup for Spark Cluster${NC}"
+echo -e "${BLUE}Starting Routing Setup for Airflow${NC}"
 
 echo -e "${YELLOW}Installing required packages...${NC}"
 apt install -y iproute2 net-tools lsof
@@ -34,19 +34,19 @@ sysctl -w net.ipv4.ip_forward=1
 mkdir -p /etc/sysctl.d
 echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/99-ip-forward.conf
 
-echo -e "${YELLOW}Configuring firewall rules for Spark services...${NC}"
+echo -e "${YELLOW}Configuring firewall rules for Airflow services...${NC}"
 
-# K3s/Kubernetes ports
-nft add rule inet filter INPUT tcp dport 6443 accept comment "K3s API Server" || true
-nft add rule inet filter INPUT tcp dport 10250 accept comment "Kubelet" || true
-nft add rule inet filter INPUT udp dport 8472 accept comment "Flannel VXLAN" || true
+# Airflow Web Server
+nft add rule inet filter INPUT tcp dport 8080 accept comment "Airflow Web UI" || true
 
-# Spark cluster communication
-nft add rule inet filter INPUT tcp dport 7077 accept comment "Spark Master" || true
-nft add rule inet filter INPUT tcp dport 7078 accept comment "Spark Worker RPC" || true
-nft add rule inet filter INPUT tcp dport 8081 accept comment "Spark Worker UI" || true
+# PostgreSQL - Airflow metadata database
+nft add rule inet filter INPUT tcp dport 5433 accept comment "PostgreSQL Airflow metadata" || true
 
-# NodePort range for Kubernetes
-nft add rule inet filter INPUT tcp dport 30000-32767 accept comment "Kubernetes NodePort range" || true
+# PostgreSQL - Datalake database
+nft add rule inet filter INPUT tcp dport 5432 accept comment "PostgreSQL Datalake" || true
+
+# MinIO S3-compatible storage
+nft add rule inet filter INPUT tcp dport 9000 accept comment "MinIO API" || true
+nft add rule inet filter INPUT tcp dport 9001 accept comment "MinIO Console" || true
 
 echo -e "${GREEN}Routing and firewall setup completed successfully!${NC}"

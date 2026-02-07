@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-master-config
+  namespace: spark
+data:
+  spark-defaults.conf: |
+    spark.master.ui.retainedApplications=20
+    spark.master.ui.retainedDrivers=20
+    spark.master.exceptionOnMemoryOverflow=false
+    spark.local.dir=/tmp/spark-master
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-worker-config
+  namespace: spark
+data:
+  spark-defaults.conf: |
+    spark.executor.cores=1
+    spark.executor.memory=2g
+    spark.executor.memoryOverhead=512m
+    spark.worker.cleanup.enabled=true
+    spark.worker.cleanup.interval=3600
+    spark.worker.cleanup.appDataTtl=10800
+    spark.worker.timeout=120
+    spark.task.cpus=1
+    spark.task.maxFailures=4
+    spark.scheduler.mode=FIFO
+    spark.local.dir=/tmp/spark-worker
+    spark.eventLog.dir=/var/spark-events
+    spark.history.fs.logDirectory=/var/spark-events

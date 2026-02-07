@@ -2,14 +2,14 @@
 
 ## High-Level Topology
 
-The system is deployed on **DigitalOcean** and consists of **three VPS instances** connected via a **private network (10.104.0.0/24)**.  
-All **external ingress traffic** is terminated on **vps_1**, which acts as the **single entry point** to the internal infrastructure.
+The system is deployed on **DigitalOcean** and consists of **three VPS instances** connected via a **WireGuard VPN network (10.10.0.0/24)** with a centralized gateway at **10.104.0.5**.  
+All **external ingress traffic** is terminated on **VPS_1**, which acts as the **single entry point** to the internal infrastructure.
 
 ---
 
-## VPS 1 — Ingress, Orchestration, OLTP, Object Storage
+## VPS_1 — Ingress, Orchestration, OLTP, Object Storage
 
-**Hostname / IP:** `vps_1 / 10.10.0.5`  
+**Hostname / IP:** `vps_1 / 10.104.0.5`  
 **OS:** Debian 12  
 **Roles:**  
 - Single external entry point  
@@ -40,36 +40,9 @@ All **external ingress traffic** is terminated on **vps_1**, which acts as the *
 
 ---
 
-## VPS 2 — Distributed Compute Layer
+## VPS_2 — Analytical Storage Layer
 
-**Hostname / IP:** `vps_2 / 10.104.0.3`  
-**OS:** Debian 12  
-**Roles:**  
-- Distributed data processing
-- Interactive analytics
-
-### Installed Services
-- **Kubernetes**
-
-### Kubernetes Workloads
-- **Apache Spark (on Kubernetes)**
-  - Batch and analytical processing
-  - Reads data from S3-compatible storage
-  - Writes results to ClickHouse and/or S3
-- **Jupyter Notebook**
-  - Interactive development and exploration
-  - Spark client interface
-
-### Responsibilities
-- Executes compute-intensive workloads
-- Isolated from direct internet access
-- Communicates only via private network
-
----
-
-## VPS 3 — Analytical Storage Layer
-
-**Hostname / IP:** `vps_3 / 10.10.0.2`  
+**Hostname / IP:** `vps_2 / 10.104.0.2`  
 **OS:** Debian 12  
 **Roles:**  
 - Analytical data storage
@@ -90,29 +63,58 @@ All **external ingress traffic** is terminated on **vps_1**, which acts as the *
 
 ---
 
+## VPS_3 — Distributed Compute Layer
+
+**Hostname / IP:** `vps_3 / 10.104.0.3`  
+**OS:** Debian 12  
+**Roles:**  
+- Distributed data processing
+- Interactive analytics
+
+### Installed Services
+- **K3s (Lightweight Kubernetes)**
+
+### Kubernetes Workloads
+- **Apache Spark (on Kubernetes)**
+  - Batch and analytical processing
+  - Reads data from S3-compatible storage
+  - Writes results to ClickHouse and/or S3
+- **Jupyter Notebook**
+  - Interactive development and exploration
+  - Spark client interface
+
+### Responsibilities
+- Executes compute-intensive workloads
+- Isolated from direct internet access
+- Communicates only via private network
+
+---
+
 ## Network and Security Model
 
-- **Single ingress point:** only `vps_1` is exposed to the internet
-- **Private inter-node communication:** `10.104.0.0/24`
-- **Access control:** OpenVPN on `vps_1`
+- **Single ingress point:** only `VPS_1` is exposed to the internet
+- **Private inter-node communication:** WireGuard VPN network `10.10.0.0/24` with gateway at `10.104.0.5`
+- **Access control:** OpenVPN/WireGuard on `VPS_1`
 - **No public exposure** of Kubernetes, Spark, or ClickHouse
+- **Routing configuration:** Each VPS enables IP forwarding and configures static routes for cross-VPS communication
 
 ---
 
 ## Data Flow Summary
 
-1. External requests enter via **vps_1**
+1. External requests enter via **VPS_1**
 2. Airflow triggers jobs and coordinates workflows
-3. Raw/intermediate data stored in **S3-compatible storage**
-4. Spark jobs on **vps_2** process data
-5. Analytical results written to **ClickHouse on vps_3**
-6. OLTP workloads handled by PostgreSQL on **vps_1**
+3. Raw/intermediate data stored in **S3-compatible storage** on VPS_1
+4. Spark jobs on **VPS_3** process data via VPN network
+5. Analytical results written to **ClickHouse on VPS_2**
+6. OLTP workloads handled by PostgreSQL on **VPS_1**
 
 ---
 
 ## Architectural Characteristics
 
 - Clear separation of **ingress**, **compute**, and **analytics**
-- Minimal attack surface
+- Minimal attack surface with WireGuard VPN isolation
 - Suitable for batch analytics and data engineering workloads
 - Scales horizontally at the compute and analytics layers
+- Automated routing setup ensures reliable inter-service communication

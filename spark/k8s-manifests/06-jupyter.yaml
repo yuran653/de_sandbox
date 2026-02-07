@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-jupyter
+  namespace: spark
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-jupyter
+  template:
+    metadata:
+      labels:
+        app: spark-jupyter
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+      - name: jupyter
+        image: custom-spark:3.4.4
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+          name: notebook
+        env:
+        - name: PYSPARK_PYTHON
+          value: /usr/local/bin/python3.11
+        - name: PYSPARK_DRIVER_PYTHON
+          value: /usr/local/bin/python3.11
+        - name: SPARK_MASTER_URL
+          value: "spark://spark-master-0.spark-master-headless.spark.svc.cluster.local:7077"
+        - name: HOME
+          value: /opt/spark
+        resources:
+          requests:
+            cpu: 150m
+            memory: 300Mi
+          limits:
+            cpu: 200m
+            memory: 400Mi
+        command:
+        - /usr/local/bin/python3.11
+        - -m
+        - jupyter
+        - lab
+        - "--ip=0.0.0.0"
+        - "--port=8888"
+        - "--no-browser"
+        - "--allow-root"
+        - "--NotebookApp.token="
+        - "--NotebookApp.password="
+        - "--notebook-dir=/opt/spark/notebooks"
+        volumeMounts:
+        - name: jupyter-notebooks
+          mountPath: /opt/spark/notebooks
+        - name: spark-events
+          mountPath: /var/spark-events
+        livenessProbe:
+          httpGet:
+            path: /lab
+            port: 8888
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
+      initContainers:
+      - name: wait-for-master
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z spark-master-0.spark-master-headless.spark.svc.cluster.local 7077; do echo waiting for master; sleep 2; done']
+      volumes:
+      - name: jupyter-notebooks
+        emptyDir: {}
+      - name: spark-events
+        persistentVolumeClaim:
+          claimName: spark-events-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-jupyter
+  namespace: spark
+spec:
+  selector:
+    app: spark-jupyter
+  ports:
+  - port: 8888
+    targetPort: 8888
+    nodePort: 30888
+    protocol: TCP
+  type: NodePort

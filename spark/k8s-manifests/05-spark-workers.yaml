@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker
+  namespace: spark
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-worker
+  template:
+    metadata:
+      labels:
+        app: spark-worker
+    spec:
+      containers:
+      - name: spark-worker
+        image: custom-spark:3.4.4
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+          name: webui
+        env:
+        - name: SPARK_WORKER_CORES
+          value: "1"
+        - name: SPARK_WORKER_MEMORY
+          value: "1g"
+        - name: SPARK_WORKER_DIR
+          value: "/tmp/spark-worker"
+        resources:
+          requests:
+            cpu: 400m
+            memory: 1000Mi
+          limits:
+            cpu: 600m
+            memory: 1200Mi
+        command:
+        - /bin/bash
+        - -c
+        - |
+          /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker \
+            --host $(hostname -i) \
+            --webui-port 8081 \
+            --cores 1 \
+            --memory 1g \
+            spark://spark-master-0.spark-master-headless.spark.svc.cluster.local:7077
+        volumeMounts:
+        - name: spark-events
+          mountPath: /var/spark-events
+        - name: spark-worker-config
+          mountPath: /opt/spark/conf/spark-defaults.conf
+          subPath: spark-defaults.conf
+        livenessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - pgrep -f 'org.apache.spark.deploy.worker.Worker'
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
+      initContainers:
+      - name: wait-for-master
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z spark-master-0.spark-master-headless.spark.svc.cluster.local 7077; do echo waiting for master; sleep 2; done']
+      volumes:
+      - name: spark-events
+        persistentVolumeClaim:
+          claimName: spark-events-pvc
+      - name: spark-worker-config
+        configMap:
+          name: spark-worker-config
