@@ -1,69 +1,63 @@
-# Revolutionize Your Data Engineering Workflow with DE Sandbox
+# DE Sandbox — Data Engineering Sandbox / Песочница для Data Engineering
 
-DE Sandbox is a Docker-based data engineering environment for Debian 12 hosts, integrating Apache Airflow 2.8.4 for workflow orchestration, Apache Spark 3.4.4 cluster for distributed processing, and ClickHouse 24.8 cluster for OLAP analytics. It includes PostgreSQL databases for metadata and datalake storage, MinIO for S3-compatible object storage, and mandatory WireGuard VPN for secure remote access. Designed for experimentation, prototyping, and training, it ensures stability with pinned versions and automated deployment scripts.
+## English ✅
+**DE Sandbox** is a compact multi-VPS data engineering environment consisting of three nodes:
+- **VPS_1:** Airflow + PostgreSQL + MinIO (Docker Compose)
+- **VPS_2:** ClickHouse cluster (Docker Compose)
+- **VPS_3:** Spark cluster on K3s + Jupyter (Kubernetes)
 
-## Why Choose DE Sandbox?
-- **All-in-One Solution**: Seamlessly integrate Airflow DAGs with Spark jobs and ClickHouse analytics in a unified Docker environment, eliminating setup complexity.
-- **Perfect for Lightweight Demos, Presentations, and Pet Projects**: Simulates real-job data engineering workflows for authentic prototyping and demonstrations without full-scale infrastructure.
-- **Production-Ready**: Pre-configured with resource limits, health checks, and persistent volumes.
-- **Secure Networking**: WireGuard VPN with nftables firewall for controlled access.
-- **Automated Setup**: Scripts handle Docker installation and service deployment.
+Nodes are connected via an OpenVPN gateway; routing and access from the public Internet are implemented via OpenVPN. Use `airflow_pg_s3/etc/generate_client_ovpn.sh` to create a client `.ovpn` file for VPN access. Installation scripts and configuration are provided in the corresponding folders: `airflow_pg_s3/`, `clickhouse/`, and `spark/`.
 
-## Key Features
-- **Airflow Platform** (`airflow_pg_s3/`): Custom Airflow 2.8.4 image with essential providers, PostgreSQL metadata store, datalake database, and MinIO object storage for S3-compatible operations.
-- **Spark Cluster** (`spark/`): K3s-based Spark 3.4.4 cluster with master, worker, and Jupyter Lab, sharing event logs for job tracking.
-- **ClickHouse Cluster** (`clickhouse/`): Distributed ClickHouse 24.8 setup with two nodes and Zookeeper for coordination, enabling high-performance OLAP queries.
-- **Security & Networking**: WireGuard VPN installer with nftables firewall, exposing only necessary ports and routing Docker traffic securely.
-- **Automation & Stability**: Bootstrap scripts for Docker, Docker Compose, and component deployment, with version locking to prevent unexpected breaks.
+Quick start:
+- Run component installers: `./airflow_pg_s3/install.sh`, `./clickhouse/install.sh`, `./spark/install.sh`
+- Verify services: `docker ps`, `kubectl get pods -n spark`.
 
-## Usage Scenarios
-- Develop and test Airflow DAGs with Postgres, MinIO, Spark, and ClickHouse integrations.
-- Prototype Spark applications against shared storage and analyze in ClickHouse.
-- Deploy consistent environments for training sessions or client demonstrations.
-- Enable secure remote collaboration via VPN.
+VPN access URLs (via OpenVPN):
+- Airflow UI: http://10.104.0.5:8080
+- PostgreSQL (Airflow Metadata): tcp://10.104.0.5:5433
+- PostgreSQL (Datalake): tcp://10.104.0.5:5432
+- MinIO Console: http://10.104.0.5:9001
+- MinIO S3 API (TCP): tcp://10.104.0.5:9000
 
-## Project Structure
-- `airflow_pg_s3/`
-  - `airflow/`: Custom Airflow image build (Dockerfile, requirements.txt, environment configs).
-  - `docker-compose.yaml`: Orchestrates Airflow scheduler/webserver, PostgreSQL databases, and MinIO.
-  - `install.sh`: Comprehensive installer for WireGuard, Docker, and Airflow stack.
-  - `etc/`: Firewall configs and helper scripts.
-  - `scripts/`: Additional deployment and setup scripts.
-- `spark/`
-  - `docker-compose.yaml`: Defines Spark master, workers, and history server.
-  - `install.sh`: Docker bootstrap and Spark service launcher.
-  - `build/`, `master/`, `workers/`, `hist-server/`: Docker build and configuration overrides.
-  - `scripts/`: Setup utilities.
-- `clickhouse/`
-  - `docker-compose.yaml`: Configures two-node ClickHouse cluster with Zookeeper and shared configs.
-  - `install.sh`: Docker and ClickHouse deployment script.
-  - `etc/`: Node-specific and cluster configurations.
-  - `scripts/`: Routing and installation helpers.
+ClickHouse endpoints (per node):
+- ClickHouse Node 1 (shard 1): HTTP: http://10.104.0.2:8123 | Native: tcp://10.104.0.2:9000
+- ClickHouse Node 2 (shard 2): HTTP: http://10.104.0.2:18123 | Native: tcp://10.104.0.2:19000
+- ZooKeeper: tcp://10.104.0.2:2181
 
-## Quick Start Guide
-1. **Prepare Your Environment**: Ensure you have a Debian 12 machine with sudo privileges and at least 8GB RAM + 50GB disk space.
-2. **Deploy Airflow Stack**: Run `airflow_pg_s3/install.sh` to install WireGuard, Docker, and launch Airflow with persistent volumes (`/airflow/*`, `/pg_*`, `/minio_datalake`).
-2. **Launch Spark Cluster**: Execute `spark/install.sh` to install Docker, set up routing, and start Spark services, creating `/spark_events` for logs.
-4. **Set Up ClickHouse**: Use `clickhouse/install.sh` for Docker installation, routing setup, and cluster initialization.
-5. **Access Interfaces** (via WireGuard VPN):
-   - **VPS_1 (Airflow)**: Airflow UI at `http://10.104.0.5:8080`, MinIO Console at `http://10.104.0.5:9001`
-   - **VPS_2 (ClickHouse)**: ClickHouse HTTP at `http://10.104.0.2:8123`
-   - **VPS_3 (Spark)**: Spark Master UI at `http://10.104.0.3:30080`, Jupyter Lab at `http://10.104.0.3:30888`
-   - ClickHouse: TCP 9000 (node1), 19000 (node2); HTTP 8123 (node1), 18123 (node2)
-   - MinIO Console: `http://<host>:9001`
+Spark UI endpoints:
+- Spark Master UI: http://10.104.0.3:30080
+- Jupyter Lab: http://10.104.0.3:30888
 
-## Advanced Configuration
-- **VPN Setup**: After running `install.sh`, add client peers to `/etc/wireguard/de_sandbox.conf` for remote access.
-- **Custom DAGs/Plugins**: Mount or add to `/airflow/dags` and `/airflow/plugins`.
-- **Spark Tuning**: Edit configs in `spark/*/spark-defaults.conf` before deployment.
-- **ClickHouse Queries**: Use `clickhouse-client` to interact; cluster configs in `etc/`.
-- **Firewall Rules**: Modify `airflow_pg_s3/etc/nftables.conf` for custom networking.
+Configuration files and manifests are located in the component folders: `airflow_pg_s3/`, `clickhouse/`, and `spark/`.
 
-## Maintenance & Troubleshooting
-- **Rebuild Images**: After dependency changes, run `docker compose build` in respective directories.
-- **Logs & Monitoring**: Use `docker compose logs -f <service>` for real-time logs.
-- **Resource Allocation**: Adjust CPU/memory limits in `docker-compose.yaml` based on host capacity.
-- **Persistence**: Volumes are bind-mounted to host paths; ensure backups for critical data.
-- **Updates**: Pinned versions ensure consistency; test upgrades in a separate environment.
+---
 
-Dive into Data Engineering today and transform the way you build data pipelines—fast, secure, and scalable!
+## Русский ✅
+**DE Sandbox** — компактная мульти-VPS среда для Data Engineering, состоящая из трех узлов:
+- **VPS_1:** Airflow + PostgreSQL + MinIO (Docker Compose)
+- **VPS_2:** Кластер ClickHouse (Docker Compose)
+- **VPS_3:** Кластер Spark на K3s + Jupyter (Kubernetes)
+
+Узлы связаны через OpenVPN-шлюз; маршрутизация и доступ из интернета реализованы через OpenVPN. Для получения клиентского конфигурационного файла `.ovpn` используйте `airflow_pg_s3/etc/generate_client_ovpn.sh`. Скрипты установки и конфигурации находятся в папках: `airflow_pg_s3/`, `clickhouse/`, `spark/`.
+
+Быстрый старт:
+- Запустите установщики: `./airflow_pg_s3/install.sh`, `./clickhouse/install.sh`, `./spark/install.sh`
+- Проверьте сервисы: `docker ps`, `kubectl get pods -n spark`.
+
+VPN-адреса для доступа (через OpenVPN):
+- Airflow UI: http://10.104.0.5:8080
+- PostgreSQL (Airflow Metadata): tcp://10.104.0.5:5433
+- PostgreSQL (Datalake): tcp://10.104.0.5:5432
+- MinIO Console: http://10.104.0.5:9001
+- MinIO S3 API (TCP): tcp://10.104.0.5:9000
+
+ClickHouse — адреса по узлам (шардам):
+- ClickHouse Узел 1 (шард 1): HTTP: http://10.104.0.2:8123 | Native: tcp://10.104.0.2:9000
+- ClickHouse Узел 2 (шард 2): HTTP: http://10.104.0.2:18123 | Native: tcp://10.104.0.2:19000
+- ZooKeeper: tcp://10.104.0.2:2181
+
+Spark UI:
+- Spark Master UI: http://10.104.0.3:30080
+- Jupyter Lab: http://10.104.0.3:30888
+
+Файлы конфигурации и манифесты находятся в папках: `airflow_pg_s3/`, `clickhouse/`, `spark/`.
