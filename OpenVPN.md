@@ -30,7 +30,7 @@
 ## Русский ✅
 1. Скачивание OpenVPN клиента
    - Перейдите на: https://openvpn.net/client/
-   - Установите **OpenVPN Connect** для вашей платформы (Windows / macOS / Linux / мобильные)
+   - Установите **OpenVPN Connect** для вашей платформы (Windows / macOS / Linux)
 
 2. Получение файла конфигурации (.ovpn)
    - Администратор создаст для вас `.ovpn`
