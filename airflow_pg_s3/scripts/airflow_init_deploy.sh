@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # Airflow Initialization and Deployment Script for Debian 12
-# This script starts all services, initializes Airflow database, and creates admin user
+# This script starts all services,
+# initializes Airflow database,
+# and creates admin user
 
 set -euo pipefail
 
@@ -14,24 +16,29 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${SCRIPT_DIR}/.."
 
 echo -e "${BLUE}Creating persistent data directories${NC}"
-mkdir -p /pg_metadata /pg_datalake /minio_datalake /airflow/{logs,dags,plugins,scripts} /spark_events
+mkdir -p /pg_metadata /pg_datalake /minio_datalake \
+    /airflow/{logs,dags,plugins,scripts} \
+    /spark_events
 # Airflow runs as UID 50000 in the container
 chown -R 50000:0 /airflow
 chown -R 50000:50000 /spark_events
 chmod -R 775 /spark_events
 # Get the current user's primary group for Debian 12
 USER_GROUP=$(id -gn)
-chown "${USER}":"${USER_GROUP}" /pg_metadata /pg_datalake /minio_datalake
+chown "${USER}":"${USER_GROUP}" \
+    /pg_metadata /pg_datalake /minio_datalake
 chmod -R 775 /airflow
 chmod 755 /pg_metadata /pg_datalake /minio_datalake
 
 echo -e "${BLUE}Starting all services${NC}"
-docker compose -f "${PROJECT_ROOT}/docker-compose.yaml" up -d --build
+docker compose -f "${PROJECT_ROOT}/docker-compose.yaml" \
+    up -d --build
 
 echo -e "${BLUE}Waiting for metadata database to be ready${NC}"
 MAX_RETRIES=30
 RETRY_COUNT=0
-until docker exec metadata-db pg_isready -U airflow -p 5433 > /dev/null 2>&1; do
+until docker exec metadata-db pg_isready \
+        -U airflow -p 5433 > /dev/null 2>&1; do
     RETRY_COUNT=$((RETRY_COUNT + 1))
     if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
         echo -e "${RED}Database failed to start after ${MAX_RETRIES} attempts${NC}"

@@ -1,11 +1,13 @@
 #!/bin/bash
 
 # OpenVPN Installation Script for Debian 12
-# Installs OpenVPN + EasyRSA, generates keys, and configures the server.
+# Installs OpenVPN + EasyRSA, generates keys,
+# and configures the server.
 
 set -euo pipefail
 
-# Ensure script runs from project root for consistent relative paths
+# Ensure script runs from project root
+# for consistent relative paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${SCRIPT_DIR}/.."
 cd "${PROJECT_ROOT}"
@@ -19,14 +21,18 @@ VPN_DIR="/etc/openvpn"
 EASY_RSA_DIR="${VPN_DIR}/easy-rsa"
 SERVER_CONF="${VPN_DIR}/server.conf"
 
-echo -e "${BLUE}Updating packages and installing OpenVPN + git${NC}"
+echo -e "${BLUE}Updating packages and installing"
+echo -e "OpenVPN + git${NC}"
 apt update
 apt install -y openvpn git iptables nftables
 
 echo -e "${BLUE}Setting up EasyRSA${NC}"
 mkdir -p "${EASY_RSA_DIR}"
-# We'll copy easy-rsa files from /usr/share/easy-rsa if available, otherwise clone/download
-# For Debian 12, 'easy-rsa' package installs to /usr/share/easy-rsa
+# We'll copy easy-rsa files from
+# /usr/share/easy-rsa if available,
+# otherwise clone/download
+# For Debian 12, 'easy-rsa' package installs
+# to /usr/share/easy-rsa
 if ! dpkg -s easy-rsa >/dev/null 2>&1; then
     apt install -y easy-rsa
 fi
@@ -47,14 +53,17 @@ echo -e "${BLUE}Generating Server Certificate...${NC}"
 ./easyrsa build-server-full server nopass
 
 # Generate DH params
-echo -e "${BLUE}Generating Diffie-Hellman parameters (this may take a while)...${NC}"
+echo -e "${BLUE}Generating Diffie-Hellman"
+echo -e "parameters (this may take a while)...${NC}"
 ./easyrsa gen-dh
 
 # Generate HMAC key for TLS auth
 openvpn --genkey --secret pki/ta.key
 
 # Copy artifacts to openvpn dir
-cp pki/ca.crt pki/private/server.key pki/issued/server.crt pki/dh.pem pki/ta.key "${VPN_DIR}/"
+cp pki/ca.crt pki/private/server.key \
+    pki/issued/server.crt pki/dh.pem pki/ta.key \
+    "${VPN_DIR}/"
 
 echo -e "${BLUE}Creating Server Config at ${SERVER_CONF}${NC}"
 cat > "${SERVER_CONF}" <<EOF
@@ -96,7 +105,8 @@ sysctl -p /etc/sysctl.d/99-openvpn.conf
 echo -e "${BLUE}Enabling and Starting OpenVPN service${NC}"
 systemctl enable --now openvpn@server
 
-echo -e "${BLUE}Writing nftables configuration to /etc/nftables.conf${NC}"
+echo -e "${BLUE}Writing nftables configuration"
+echo -e "to /etc/nftables.conf${NC}"
 if [ -f "${PROJECT_ROOT}/etc/nftables.conf" ]; then
   cp "${PROJECT_ROOT}/etc/nftables.conf" /etc/nftables.conf
 else
@@ -108,4 +118,5 @@ echo -e "${BLUE}Enabling nftables${NC}"
 systemctl enable nftables
 systemctl restart nftables
 
-echo -e "${GREEN}OpenVPN installation completed successfully!${NC}"
+echo -e "${GREEN}OpenVPN installation"
+echo -e "completed successfully!${NC}"

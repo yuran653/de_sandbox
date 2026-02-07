@@ -13,8 +13,8 @@ services:
         <<: *spark-base
         container_name: spark-master
         restart: always
-        cpus: 0.8
-        mem_limit: 1.5g
+        cpus: 0.3
+        mem_limit: 0.8g
         env_file:
             - ./master/.env
         command: >
@@ -33,8 +33,8 @@ services:
         <<: *spark-base
         container_name: spark-worker-1
         restart: always
-        cpus: 1.2
-        mem_limit: 2.5g
+        cpus: 0.6
+        mem_limit: 1.2g
         env_file:
             - ./workers/.env
         command: >
@@ -56,8 +56,8 @@ services:
         <<: *spark-base
         container_name: spark-worker-2
         restart: always
-        cpus: 1.2
-        mem_limit: 2.5g
+        cpus: 0.6
+        mem_limit: 1.2g
         env_file:
             - ./workers/.env
         command: >
@@ -79,8 +79,8 @@ services:
         <<: *spark-base
         container_name: spark-jupyter
         restart: always
-        cpus: 0.5
-        mem_limit: 1g
+        cpus: 0.3
+        mem_limit: 0.5g
         env_file:
             - ./jupyter/.env
         environment:

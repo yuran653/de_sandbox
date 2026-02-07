@@ -16,7 +16,9 @@ services:
             - zk_data:/data
             - zk_logs:/datalog
         healthcheck:
-            test: ["CMD-SHELL", "echo ruok | nc ${CH_HOST} 2181 | grep imok"]
+            test:
+                - CMD-SHELL
+                - echo ruok | nc ${CH_HOST} 2181 | grep imok
             interval: 30s
             timeout: 10s
             retries: 5
@@ -38,7 +40,9 @@ services:
             zookeeper:
                 condition: service_healthy
         healthcheck:
-            test: ["CMD-SHELL", "clickhouse-client --port 9000 --query='SELECT 1'"]
+            test:
+                - CMD-SHELL
+                - clickhouse-client --port 9000 --query='SELECT 1'
             interval: 30s
             timeout: 10s
             retries: 5
@@ -60,7 +64,9 @@ services:
             clickhouse-01:
                 condition: service_healthy
         healthcheck:
-            test: ["CMD-SHELL", "clickhouse-client --port 19000 --query='SELECT 1'"]
+            test:
+                - CMD-SHELL
+                - clickhouse-client --port 19000 --query='SELECT 1'
             interval: 30s
             timeout: 10s
             retries: 5
@@ -72,52 +78,51 @@ services:
         depends_on:
             clickhouse-02:
                 condition: service_healthy
-        entrypoint: ["/bin/sh", "-c"]
+        entrypoint: [ "/bin/sh", "-c" ]
         command:
             - clickhouse-client --host ${CH_HOST} --port 9000 --query 'CREATE DATABASE IF NOT EXISTS ch_datalake ON CLUSTER ch_cluster ENGINE = Atomic'
         restart: "no"
-
 
 volumes:
 
     zk_data:
         driver: local
         driver_opts:
-          type: none
-          o: bind
-          device: /clickhouse/zk/data
+            type: none
+            o: bind
+            device: /clickhouse/zk/data
 
     zk_logs:
         driver: local
         driver_opts:
-          type: none
-          o: bind
-          device: /clickhouse/zk/logs
+            type: none
+            o: bind
+            device: /clickhouse/zk/logs
 
     ch01_data:
         driver: local
         driver_opts:
-          type: none
-          o: bind
-          device: /clickhouse/01/data
+            type: none
+            o: bind
+            device: /clickhouse/01/data
 
     ch01_logs:
         driver: local
         driver_opts:
-          type: none
-          o: bind
-          device: /clickhouse/01/logs
+            type: none
+            o: bind
+            device: /clickhouse/01/logs
 
     ch02_data:
         driver: local
         driver_opts:
-          type: none
-          o: bind
-          device: /clickhouse/02/data
+            type: none
+            o: bind
+            device: /clickhouse/02/data
 
     ch02_logs:
         driver: local
         driver_opts:
-          type: none
-          o: bind
-          device: /clickhouse/02/logs
+            type: none
+            o: bind
+            device: /clickhouse/02/logs

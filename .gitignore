@@ -45,3 +45,9 @@ clickhouse_data/
 # Temporary files
 *.tmp
 *.bak
+
+#Antigravity
+.agent
+.antigravity
+.cursor
+ARTEFACT.md
