@@ -9,6 +9,16 @@ data:
     spark.master.ui.retainedDrivers=20
     spark.master.exceptionOnMemoryOverflow=false
     spark.local.dir=/tmp/spark-master
+  log4j2.properties: |
+    rootLogger.level = info
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = %d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+    rootLogger.appenderRef.console.ref = console
+    # Silence NativeCodeLoader check
+    logger.hadoop.name = org.apache.hadoop.util.NativeCodeLoader
+    logger.hadoop.level = error
 
 ---
 apiVersion: v1
@@ -33,3 +43,13 @@ data:
     spark.local.dir=/tmp/spark-worker
     spark.eventLog.dir=/var/spark-events
     spark.history.fs.logDirectory=/var/spark-events
+  log4j2.properties: |
+    rootLogger.level = info
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = %d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+    rootLogger.appenderRef.console.ref = console
+    # Silence NativeCodeLoader check
+    logger.hadoop.name = org.apache.hadoop.util.NativeCodeLoader
+    logger.hadoop.level = error

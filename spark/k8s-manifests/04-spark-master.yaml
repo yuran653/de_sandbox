@@ -49,6 +49,9 @@ spec:
         - name: spark-master-config
           mountPath: /opt/spark/conf/spark-defaults.conf
           subPath: spark-defaults.conf
+        - name: spark-master-config
+          mountPath: /opt/spark/conf/log4j2.properties
+          subPath: log4j2.properties
         livenessProbe:
           exec:
             command:

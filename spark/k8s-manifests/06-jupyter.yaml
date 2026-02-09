@@ -75,6 +75,9 @@ spec:
           mountPath: /opt/spark/notebooks
         - name: spark-events
           mountPath: /var/spark-events
+        - name: spark-log-config
+          mountPath: /opt/spark/conf/log4j2.properties
+          subPath: log4j2.properties
         livenessProbe:
           httpGet:
             path: /lab
@@ -93,6 +96,9 @@ spec:
       - name: spark-events
         persistentVolumeClaim:
           claimName: spark-events-pvc
+      - name: spark-log-config
+        configMap:
+          name: spark-master-config
 
 ---
 apiVersion: v1
