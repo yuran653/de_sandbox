@@ -92,7 +92,9 @@ spec:
         command: ['sh', '-c', 'until nc -z spark-master-0.spark-master-headless.spark.svc.cluster.local 7077; do echo waiting for master; sleep 2; done']
       volumes:
       - name: jupyter-notebooks
-        emptyDir: {}
+        hostPath:
+          path: /root/jupyter
+          type: DirectoryOrCreate
       - name: spark-events
         persistentVolumeClaim:
           claimName: spark-events-pvc

@@ -80,10 +80,12 @@ fi
 echo -e "\n${YELLOW}Step 4/6: Verifying Spark image availability${NC}"
 docker images | grep custom-spark && echo -e "${GREEN}Spark image available${NC}"
 
-# Step 5: Create spark_events directory
+# Step 5: Create directories
 echo -e "\n${YELLOW}Step 5/6: Creating directories${NC}"
 mkdir -p /spark_events
 chmod 777 /spark_events
+mkdir -p ./jupyter
+chmod 777 ./jupyter
 echo -e "${GREEN}Directories created${NC}"
 
 # Step 6: Deploy Spark components to K3s
