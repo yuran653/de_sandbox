@@ -30,15 +30,34 @@ spec:
           value: /usr/local/bin/python3.11
         - name: SPARK_MASTER_URL
           value: "spark://spark-master-0.spark-master-headless.spark.svc.cluster.local:7077"
+        - name: PYTHONPATH
+          value: "/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip"
+        - name: SPARK_DRIVER_MEMORY
+          value: "512m"
+        - name: SPARK_DRIVER_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: SPARK_DRIVER_BIND_ADDRESS
+          value: "0.0.0.0"
+        - name: SPARK_PUBLIC_DNS
+          value: "10.104.0.3"
+        - name: PYSPARK_SUBMIT_ARGS
+          value: >-
+            --conf spark.driver.publicDns=10.104.0.3
+            --conf spark.ui.port=30040
+            --conf spark.driver.bindAddress=0.0.0.0
+            --conf spark.driver.host=$(SPARK_DRIVER_HOST)
+            pyspark-shell
         - name: HOME
           value: /opt/spark
         resources:
           requests:
-            cpu: 150m
-            memory: 300Mi
-          limits:
             cpu: 200m
-            memory: 400Mi
+            memory: 512Mi
+          limits:
+            cpu: 250m
+            memory: 800Mi
         command:
         - /usr/local/bin/python3.11
         - -m
@@ -89,4 +108,10 @@ spec:
     targetPort: 8888
     nodePort: 30888
     protocol: TCP
+    name: jupyter
+  - port: 30040
+    targetPort: 30040
+    nodePort: 30040
+    protocol: TCP
+    name: spark-ui
   type: NodePort

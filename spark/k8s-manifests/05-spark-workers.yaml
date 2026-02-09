@@ -1,10 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: spark-worker
   namespace: spark
 spec:
-  replicas: 1
+  serviceName: spark-worker-headless
+  replicas: 2
   selector:
     matchLabels:
       app: spark-worker
@@ -17,9 +18,13 @@ spec:
       - name: spark-worker
         image: custom-spark:3.4.4
         imagePullPolicy: IfNotPresent
+        # Expose both potential ports since we can't be dynamic here easily
+        # but actual listening port is set by command
         ports:
-        - containerPort: 8081
-          name: webui
+        - containerPort: 30081
+          name: webui-0
+        - containerPort: 30082
+          name: webui-1
         env:
         - name: SPARK_WORKER_CORES
           value: "1"
@@ -29,18 +34,25 @@ spec:
           value: "/tmp/spark-worker"
         resources:
           requests:
-            cpu: 400m
-            memory: 1000Mi
+            cpu: 475m
+            memory: 1024Mi
           limits:
-            cpu: 600m
-            memory: 1200Mi
+            cpu: 650m
+            memory: 1400Mi
         command:
         - /bin/bash
         - -c
         - |
+          # Calculate port based on pod index (spark-worker-0 -> 0)
+          POD_INDEX=${HOSTNAME##*-}
+          export SPARK_PUBLIC_DNS=10.104.0.3
+          export SPARK_WORKER_WEBUI_PORT=$((30081 + POD_INDEX))
+          
+          echo "Starting worker with WebUI Port: $SPARK_WORKER_WEBUI_PORT and Public DNS: $SPARK_PUBLIC_DNS"
+          
           /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker \
             --host $(hostname -i) \
-            --webui-port 8081 \
+            --webui-port $SPARK_WORKER_WEBUI_PORT \
             --cores 1 \
             --memory 1g \
             spark://spark-master-0.spark-master-headless.spark.svc.cluster.local:7077
@@ -65,9 +77,65 @@ spec:
         image: busybox:latest
         command: ['sh', '-c', 'until nc -z spark-master-0.spark-master-headless.spark.svc.cluster.local 7077; do echo waiting for master; sleep 2; done']
       volumes:
-      - name: spark-events
-        persistentVolumeClaim:
-          claimName: spark-events-pvc
       - name: spark-worker-config
         configMap:
           name: spark-worker-config
+  volumeClaimTemplates:
+  - metadata:
+      name: spark-events
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local-path
+      resources:
+        requests:
+          storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-worker-headless
+  namespace: spark
+spec:
+  clusterIP: None
+  selector:
+    app: spark-worker
+  ports:
+  - name: webui-0
+    port: 30081
+    targetPort: 30081
+  - name: webui-1
+    port: 30082
+    targetPort: 30082
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-worker-0-ui
+  namespace: spark
+spec:
+  type: NodePort
+  selector:
+    statefulset.kubernetes.io/pod-name: spark-worker-0
+  ports:
+  - name: webui
+    port: 30081
+    targetPort: 30081
+    nodePort: 30081
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-worker-1-ui
+  namespace: spark
+spec:
+  type: NodePort
+  selector:
+    statefulset.kubernetes.io/pod-name: spark-worker-1
+  ports:
+  - name: webui
+    port: 30082
+    targetPort: 30082
+    nodePort: 30082

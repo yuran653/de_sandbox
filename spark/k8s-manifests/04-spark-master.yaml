@@ -21,18 +21,20 @@ spec:
         ports:
         - containerPort: 7077
           name: master-port
-        - containerPort: 8080
+        - containerPort: 30080
           name: webui
         env:
         - name: SPARK_DAEMON_MEMORY
-          value: "800m"
+          value: "512m"
+        - name: SPARK_PUBLIC_DNS
+          value: "10.104.0.3"
         resources:
           requests:
-            cpu: 200m
-            memory: 600Mi
+            cpu: 250m
+            memory: 512Mi
           limits:
-            cpu: 300m
-            memory: 800Mi
+            cpu: 350m
+            memory: 700Mi
         command:
         - /bin/bash
         - -c
@@ -40,7 +42,7 @@ spec:
           /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master \
             --host $(hostname -i) \
             --port 7077 \
-            --webui-port 8080
+            --webui-port 30080
         volumeMounts:
         - name: spark-events
           mountPath: /var/spark-events
@@ -93,8 +95,8 @@ spec:
     port: 7077
     targetPort: 7077
   - name: webui
-    port: 8080
-    targetPort: 8080
+    port: 30080
+    targetPort: 30080
 
 ---
 apiVersion: v1
@@ -107,7 +109,7 @@ spec:
     app: spark-master
   ports:
   - name: webui
-    port: 8080
-    targetPort: 8080
+    port: 30080
+    targetPort: 30080
     nodePort: 30080
   type: NodePort
