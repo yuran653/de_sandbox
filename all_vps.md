@@ -110,39 +110,39 @@ Three separate VPS instances, each running different data engineering infrastruc
 
 | Service | Type | Replicas | CPU Requests | CPU Limits | Memory Requests | Memory Limits | Purpose |
 |---------|------|----------|--------------|-----------|-----------------|---------------|---------|
-| spark-master | StatefulSet | 1 | 250m | 350m | 512 Mi | 700 Mi | Cluster manager (port 7077) |
-| spark-worker | StatefulSet | 2 | 475m ea | 650m ea | 1024 Mi ea | 1400 Mi ea | Worker nodes (webui: 30081-30082) |
-| spark-jupyter | Deployment | 1 | 200m | 250m | 512 Mi | 800 Mi | Jupyter Lab notebook environment (port 8888) |
+| spark-master | StatefulSet | 1 | 500m | 600m | 1024 Mi | 1280 Mi | Cluster manager (port 7077) |
+| spark-worker | StatefulSet | 2 | 1200m ea | 1400m ea | 2560 Mi ea | 2816 Mi ea | Worker nodes (webui: 30081-30082) |
+| spark-jupyter | Deployment | 1 | 400m | 500m | 768 Mi | 1024 Mi | Jupyter Lab notebook environment (port 8888) |
 
 ### Resource Allocation Summary
 
 | Metric | Requests | Limits |
 |--------|----------|--------|
-| **Total CPU** | 1.4 cores | 1.9 cores |
-| **Total Memory** | 3.5 GB | 4.9 GB |
+| **Total CPU** | 3.3 cores | 3.9 cores |
+| **Total Memory** | 6.9 GB | 7.7 GB |
 
 ### Detailed Resource Breakdown
 
 #### Master Node
 - **spark-master** (1 replica)
-  - CPU: 250m requests / 350m limits
-  - Memory: 512 Mi requests / 700 Mi limits
-  - Environment: SPARK_DAEMON_MEMORY=512m
-  - Public DNS: 10.104.0.3
+  - CPU: 500m requests / 600m limits
+  - Memory: 1024 Mi requests / 1280 Mi limits
+  - Environment: SPARK_DAEMON_MEMORY=768m
+  - Public DNS: 10.104.0.4
 
 #### Worker Nodes (Scaled)
 - **spark-worker** (2 replicas)
-  - Per-node CPU: 475m requests / 650m limits
-  - Per-node Memory: 1024 Mi requests / 1400 Mi limits
+  - Per-node CPU: 1200m requests / 1400m limits
+  - Per-node Memory: 2560 Mi requests / 2816 Mi limits
   - Configured cores per worker: 1
-  - Configured memory per worker: 1g
-  - Total: 950m CPU requests / 1.3 cores CPU limits, 2 GB / 2.8 GB memory
+  - Configured memory per worker: 2g
+  - Total: 2400m CPU requests / 2.8 cores CPU limits, 5 GB / 5.5 GB memory
 
 #### Notebook Server
 - **spark-jupyter** (1 replica)
-  - CPU: 200m requests / 250m limits
-  - Memory: 512 Mi requests / 800 Mi limits
-  - Driver Memory: 512m
+  - CPU: 400m requests / 500m limits
+  - Memory: 768 Mi requests / 1024 Mi limits
+  - Driver Memory: 768m
   - Python: 3.11
 
 ### Volume Mounts (Persistent)
@@ -164,8 +164,8 @@ Three separate VPS instances, each running different data engineering infrastruc
 |-----|--------------|-----------|-----------|
 | VPS 1 (Airflow) | Orchestration | 1.8 | ~49% |
 | VPS 2 (ClickHouse) | Analytics DB | 1.9 | ~52% |
-| VPS 3 (Spark) | Processing (Requests) | 1.4 | ~38% |
-| VPS 3 (Spark) | Processing (Limits) | 1.9 | ~52% |
+| VPS 3 (Spark) | Processing (Requests) | 3.3 | ~90% |
+| VPS 3 (Spark) | Processing (Limits) | 3.9 | ~106% |
 
 ### Memory Allocation
 
@@ -173,8 +173,8 @@ Three separate VPS instances, each running different data engineering infrastruc
 |-----|--------------|------------|-----------|
 | VPS 1 (Airflow) | Orchestration | 3.6 | ~42% |
 | VPS 2 (ClickHouse) | Analytics DB | 4.1 | ~48% |
-| VPS 3 (Spark) | Processing (Requests) | 3.5 | ~41% |
-| VPS 3 (Spark) | Processing (Limits) | 4.9 | ~57% |
+| VPS 3 (Spark) | Processing (Requests) | 6.9 | ~80% |
+| VPS 3 (Spark) | Processing (Limits) | 7.7 | ~89% |
 
 ### Total Infrastructure Requirements
 
@@ -182,10 +182,10 @@ Three separate VPS instances, each running different data engineering infrastruc
 |--------|-------|
 | **Total CPU (Docker)** | 5.6 cores (VPS 1 + VPS 2) |
 | **Total Memory (Docker)** | 7.7 GB (VPS 1 + VPS 2) |
-| **Spark CPU Requests** | 1.4 cores |
-| **Spark Memory Requests** | 3.5 GB |
-| **Spark CPU Limits** | 1.9 cores |
-| **Spark Memory Limits** | 4.9 GB |
+| **Spark CPU Requests** | 3.3 cores |
+| **Spark Memory Requests** | 6.9 GB |
+| **Spark CPU Limits** | 3.9 cores |
+| **Spark Memory Limits** | 7.7 GB |
 
 ---
 

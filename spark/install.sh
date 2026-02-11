@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # K3s Installation and Spark Cluster Deployment Script
-# For Debian 12, 2 CPUs, 4GB RAM
+# For Debian 12, 4 CPUs, 8GB RAM
 # Updated with actual working configuration
 
 set -euo pipefail

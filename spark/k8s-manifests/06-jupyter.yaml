@@ -33,7 +33,7 @@ spec:
         - name: PYTHONPATH
           value: "/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip"
         - name: SPARK_DRIVER_MEMORY
-          value: "512m"
+          value: "768m"
         - name: SPARK_DRIVER_HOST
           valueFrom:
             fieldRef:
@@ -41,10 +41,10 @@ spec:
         - name: SPARK_DRIVER_BIND_ADDRESS
           value: "0.0.0.0"
         - name: SPARK_PUBLIC_DNS
-          value: "10.104.0.3"
+          value: "10.104.0.4"
         - name: PYSPARK_SUBMIT_ARGS
           value: >-
-            --conf spark.driver.publicDns=10.104.0.3
+            --conf spark.driver.publicDns=10.104.0.4
             --conf spark.ui.port=30040
             --conf spark.driver.bindAddress=0.0.0.0
             --conf spark.driver.host=$(SPARK_DRIVER_HOST)
@@ -53,11 +53,11 @@ spec:
           value: /opt/spark
         resources:
           requests:
-            cpu: 200m
-            memory: 512Mi
+            cpu: 400m
+            memory: 768Mi
           limits:
-            cpu: 250m
-            memory: 800Mi
+            cpu: 500m
+            memory: 1024Mi
         command:
         - /usr/local/bin/python3.11
         - -m

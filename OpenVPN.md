@@ -22,8 +22,8 @@
      - MinIO S3 API (TCP): host 10.104.0.5 port 9000
      - ClickHouse Node 1 (HTTP / Native): host 10.104.0.2 port 8123 / host 10.104.0.2 port 9000
      - ClickHouse Node 2 (HTTP / Native): host 10.104.0.2 port 18123 / host 10.104.0.2 port 19000
-     - Spark Master UI: http://10.104.0.3:30080
-     - Jupyter Lab: http://10.104.0.3:30888
+     - Spark Master UI: http://10.104.0.4:30080
+     - Jupyter Lab: http://10.104.0.4:30888
 
 ---
 
@@ -49,6 +49,6 @@
      - MinIO S3 API (TCP): host 10.104.0.5 port 9000
      - ClickHouse Шард 1 (HTTP / Native): host 10.104.0.2 port 8123 / host 10.104.0.2 port 9000
      - ClickHouse Шард 2 (HTTP / Native): host 10.104.0.2 port 18123 / host 10.104.0.2 port 19000
-     - Spark Master UI: http://10.104.0.3:30080
-     - Jupyter Lab: http://10.104.0.3:30888
+     - Spark Master UI: http://10.104.0.4:30080
+     - Jupyter Lab: http://10.104.0.4:30888
    

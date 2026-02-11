@@ -25,16 +25,16 @@ spec:
           name: webui
         env:
         - name: SPARK_DAEMON_MEMORY
-          value: "512m"
+          value: "768m"
         - name: SPARK_PUBLIC_DNS
-          value: "10.104.0.3"
+          value: "10.104.0.4"
         resources:
           requests:
-            cpu: 250m
-            memory: 512Mi
+            cpu: 500m
+            memory: 1024Mi
           limits:
-            cpu: 350m
-            memory: 700Mi
+            cpu: 600m
+            memory: 1280Mi
         command:
         - /bin/bash
         - -c

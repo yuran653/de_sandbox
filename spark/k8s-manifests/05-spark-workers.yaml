@@ -29,23 +29,23 @@ spec:
         - name: SPARK_WORKER_CORES
           value: "1"
         - name: SPARK_WORKER_MEMORY
-          value: "1g"
+          value: "2g"
         - name: SPARK_WORKER_DIR
           value: "/tmp/spark-worker"
         resources:
           requests:
-            cpu: 475m
-            memory: 1024Mi
+            cpu: 1200m
+            memory: 2560Mi
           limits:
-            cpu: 650m
-            memory: 1400Mi
+            cpu: 1400m
+            memory: 2816Mi
         command:
         - /bin/bash
         - -c
         - |
           # Calculate port based on pod index (spark-worker-0 -> 0)
           POD_INDEX=${HOSTNAME##*-}
-          export SPARK_PUBLIC_DNS=10.104.0.3
+          export SPARK_PUBLIC_DNS=10.104.0.4
           export SPARK_WORKER_WEBUI_PORT=$((30081 + POD_INDEX))
           
           echo "Starting worker with WebUI Port: $SPARK_WORKER_WEBUI_PORT and Public DNS: $SPARK_PUBLIC_DNS"
@@ -54,7 +54,7 @@ spec:
             --host $(hostname -i) \
             --webui-port $SPARK_WORKER_WEBUI_PORT \
             --cores 1 \
-            --memory 1g \
+            --memory 2g \
             spark://spark-master-0.spark-master-headless.spark.svc.cluster.local:7077
         volumeMounts:
         - name: spark-events

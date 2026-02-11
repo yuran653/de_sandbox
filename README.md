@@ -25,8 +25,8 @@ ClickHouse endpoints (per node):
 - ZooKeeper: tcp://10.104.0.2:2181
 
 Spark UI endpoints:
-- Spark Master UI: http://10.104.0.3:30080
-- Jupyter Lab: http://10.104.0.3:30888
+- Spark Master UI: http://10.104.0.4:30080
+- Jupyter Lab: http://10.104.0.4:30888
 
 Configuration files and manifests are located in the component folders: `airflow_pg_s3/`, `clickhouse/`, and `spark/`.
 
@@ -57,7 +57,7 @@ ClickHouse — адреса по узлам (шардам):
 - ZooKeeper: tcp://10.104.0.2:2181
 
 Spark UI:
-- Spark Master UI: http://10.104.0.3:30080
-- Jupyter Lab: http://10.104.0.3:30888
+- Spark Master UI: http://10.104.0.4:30080
+- Jupyter Lab: http://10.104.0.4:30888
 
 Файлы конфигурации и манифесты находятся в папках: `airflow_pg_s3/`, `clickhouse/`, `spark/`.

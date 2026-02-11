@@ -31,8 +31,8 @@ data:
     # Note: Executor resources are typically set by user code
     # These are fallback defaults only
     spark.executor.cores=1
-    spark.executor.memory=1g
-    spark.executor.memoryOverhead=128m
+    spark.executor.memory=2g
+    spark.executor.memoryOverhead=256m
     spark.worker.cleanup.enabled=true
     spark.worker.cleanup.interval=3600
     spark.worker.cleanup.appDataTtl=10800
